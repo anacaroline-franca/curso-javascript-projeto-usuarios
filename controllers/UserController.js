@@ -10,11 +10,20 @@ class UserController {
         this.formEl.addEventListener("submit", event => {
             event.preventDefault();
 
-            let user = this.getValues();
+            let btn = this.formEl.querySelector("[type=submit]");
+            btn.disabled = true;
 
+            let values = this.getValues();
+
+            if (!values) {
+                return false;
+            }
             this.getPhoto().then((content) => {
-                user.photo = content;
-                this.addTableRow(user);
+                values.photo = content;
+                this.addTableRow(values);
+
+                this.formEl.reset();
+                btn.disabled = false;
             }, (e) => {
                 console.error(e);
             });
@@ -49,8 +58,16 @@ class UserController {
 
     getValues() {
         let user = {};
+        let isValid = true;
 
         [...this.formEl.elements].forEach(function(field, index){
+
+            //Required fields
+            if (['name', 'email', 'password'].indexOf(field.name) > -1 && !field.value) {
+                field.parentElement.classList.add('has-error');
+                isValid = false;
+            }
+
             if (field.name === "gender" && field.checked) {
                 user[field.name] = field.value;
             } else if (field.name == 'admin'){
@@ -60,6 +77,10 @@ class UserController {
             }
         });
     
+        if (!isValid) {
+            return false;
+        }
+
         return new User(
             user.name,
             user.gender,
@@ -81,7 +102,7 @@ class UserController {
             <td>${user.name}</td>
             <td>${user.email}</td>
             <td>${(user.admin ? 'Sim' : 'Não')}</td>
-            <td>${user.birth}</td>
+            <td>${Utils.dateFormat(user.register)}</td>
             <td>
                 <button type="button" class="btn btn-primary btn-xs btn-flat">Editar</button>
                 <button type="button" class="btn btn-danger btn-xs btn-flat">Excluir</button>
