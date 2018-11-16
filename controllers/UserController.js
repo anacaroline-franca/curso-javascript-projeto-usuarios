@@ -95,6 +95,8 @@ class UserController {
 
     addTableRow(user) {
         let tr = document.createElement('tr');
+        tr.dataset.user = JSON.stringify(user);
+
         tr.innerHTML = `
             <td>
                 <img src="${user.photo}" alt="User Image" class="img-circle img-sm">
@@ -110,5 +112,22 @@ class UserController {
         `;
 
         this.tableEl.appendChild(tr);
+        this.updateCounters();
+    }
+
+    updateCounters() {
+        let numberUsers = 0;
+        let numberUsersAdmin = 0;
+
+        [...this.tableEl.children].forEach(tr => {
+            let user = JSON.parse(tr.dataset.user);
+            if (user._admin) {
+                numberUsersAdmin++;
+            }
+            numberUsers++;
+        });
+
+        document.querySelector("#number-users").innerHTML = numberUsers;
+        document.querySelector("#number-users-admin").innerHTML = numberUsersAdmin;
     }
 }
